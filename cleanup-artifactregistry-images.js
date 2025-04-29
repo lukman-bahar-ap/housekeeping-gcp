@@ -13,11 +13,6 @@ async function cleanupArtifactImages() {
     const parent = `projects/${projectId}/locations/${location}/repositories/${repository}`;
     const [packages] = await client.listPackages({ parent });
 
-    if (packages.length < 10) {
-        console.log(`Only ${packages.length} packages found. Skipping cleanup.`);
-        return;
-    }
-    
     for (const pkg of packages) {
         const [versions] = await client.listVersions({ parent: pkg.name, orderBy: 'updateTime desc' });
 
