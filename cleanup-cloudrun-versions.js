@@ -4,6 +4,7 @@ const { google } = require('googleapis');
 const projectID = process.env.PROJECT_ID;
 const region = process.env.REGION;
 const serviceName = process.env.CLOUD_RUN_SERVICE_NAME;
+const NUMBER_OF_KEEPING = 10;
 
 async function getRevisions() {
     const auth = await google.auth.getClient({ scopes: ['https://www.googleapis.com/auth/cloud-platform'] });
@@ -21,9 +22,9 @@ async function deleteOldRevisions() {
     const auth = await google.auth.getClient({ scopes: ['https://www.googleapis.com/auth/cloud-platform'] });
     const run = google.run('v2');
     const revisions = await getRevisions();
-    if (revisions.length <= 10) return;
+    if (revisions.length <= NUMBER_OF_KEEPING) return;
 
-    const oldRevisions = revisions.slice(10);
+    const oldRevisions = revisions.slice(NUMBER_OF_KEEPING);
     for (const revision of oldRevisions) {
         console.log(`Deleting revision: ${revision.name}`);
         try {

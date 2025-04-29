@@ -2,12 +2,9 @@ const { google } = require('googleapis');
 const functions = require('@google-cloud/functions-framework');
 const { ArtifactRegistryClient } = require('@google-cloud/artifact-registry');
 
-const projectId = process.env.PROJECT_ID;
-const location = process.env.LOCATION; // 'asia-southeast2'
-const repository = process.env.REPOSITORY;
 const NUMBER_OF_KEEPING = 10;
 
-async function cleanupArtifactImages() {
+async function cleanupArtifactImages(projectId, location, repository) {
     const client = new ArtifactRegistryClient();
 
     const parent = `projects/${projectId}/locations/${location}/repositories/${repository}`;
@@ -33,8 +30,20 @@ async function cleanupArtifactImages() {
 
 functions.http('cleanupArtifactRegistryImages', async (req, res) => {
     try {
-        await cleanupArtifactImages();
-        res.status(200).send('Artifact Registry cleanup completed');
+        if (req.method !== 'GET') {
+            return res.status(405).send('Method Not Allowed');
+        }
+        const getProjectId = req.query.projectId;
+        const getLocation = req.query.location;
+        const getRepository = req.query.repository;
+
+        if (!getProjectId || !getLocation || !getRepository) {
+            return res.status(400).send('Missing required query parameters');
+        }
+    
+
+    await cleanupArtifactImages(getProjectId, getLocation, getRepository);
+    res.status(200).send(`Cleanup completed for ${getRepository}`);
     } catch (error) {
         console.error('Error cleaning Artifact Registry:', error);
         res.status(500).send('Failed to clean Artifact Registry');

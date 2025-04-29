@@ -3,6 +3,7 @@ const functions = require('@google-cloud/functions-framework');
 
 const projectID = process.env.PROJECT_ID;
 const serviceName = process.env.APP_SERVICE_NAME;
+const NUMBER_OF_KEEPING = 10;
 
 async function getAppEngineVersions() {
     const auth = await google.auth.getClient({ scopes: ['https://www.googleapis.com/auth/cloud-platform'] });
@@ -20,9 +21,9 @@ async function deleteOldVersions() {
     const auth = await google.auth.getClient({ scopes: ['https://www.googleapis.com/auth/cloud-platform'] });
     const appengine = google.appengine({ version: 'v1', auth });
     const versions = await getAppEngineVersions();
-    if (versions.length <= 10) return;
+    if (versions.length <= NUMBER_OF_KEEPING) return;
 
-    const oldVersions = versions.slice(10);
+    const oldVersions = versions.slice(NUMBER_OF_KEEPING);
     for (const version of oldVersions) {
         console.log(`Deleting version: ${version.id}`);
         try {
